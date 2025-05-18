@@ -1,16 +1,23 @@
 FROM python:3.11-slim
 
-# Set working directory
-WORKDIR /app
+RUN useradd -m appuser
 
-# Copy all files
-COPY . /app
+WORKDIR /home/appuser/app
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
 
-# Expose Streamlit's port
+ENV STREAMLIT_BROWSER_GATHERUSAGESTATS=false
+ENV STREAMLIT_CONFIG_DIR=/home/appuser/.streamlit
+ENV MEM0_DIR=/home/appuser/.mem0
+ENV EMBEDCHAIN_DIR=/home/appuser/.embedchain
+
+RUN mkdir -p $STREAMLIT_CONFIG_DIR $MEM0_DIR $EMBEDCHAIN_DIR && \
+    chmod -R 777 /home/appuser && \
+    pip install --no-cache-dir -r requirements.txt
+
+USER appuser
+
 EXPOSE 7860
 
-# Run your Streamlit app
 CMD ["streamlit", "run", "app.py", "--server.port=7860", "--server.address=0.0.0.0"]
+
